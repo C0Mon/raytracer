@@ -43,19 +43,22 @@ mod ppm {
                 image,
             }
         }
-
+        
         pub fn set_pixel(&mut self, x: usize, y: usize, pixel: Pixel) {
             self.image[y][x] = pixel;
         }
-        
         pub fn format(&self) -> String {
+            use std::io::{self, Write};
             let mut format_img = format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.height, self.width, self.max_val);
             for y in 0..self.height {
+                eprint!("\rScanlines remaining: {} ", self.height - y);
+                io::stderr().flush().unwrap();
                 for x in 0..self.width {
                     let pixel_str = self.image[y][x].format();
                     format_img.push_str(&pixel_str);
                 }
             }
+            eprint!("\r\x1b[2KDone\n");
             return format_img
         }
     }
