@@ -11,6 +11,6 @@ impl Colour {
     }
 
     pub fn format(&self) -> String{
-        format!("{0} {1} {2}\n", self.x, self.y, self.z)
+        format!("{0} {1} {2}\n", self.x as u32, self.y as u32, self.z as u32)
     }
 }

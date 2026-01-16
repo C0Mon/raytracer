@@ -52,11 +52,16 @@ impl Ppm {
         let mut writer = BufWriter::new(file);
         writer.write_all(&(self.get_headers()).into_bytes())?;
         for x in 0..self.height {
+            eprint!("\rScanlines remaining: {} ", self.height - x);
+            io::stderr().flush().unwrap();
             for y in 0..self.width {
-                writer.write_all(&(self.image[y][x].format()).into_bytes())?;
+                let mut pixel = self.image[x][y];
+                pixel *= 255.99;
+                writer.write_all(&(pixel.format()).into_bytes())?;
             }
         }
         writer.flush()?;
+        eprint!("\r\x1b[2KDone\n");
         Ok(())
     }
 }

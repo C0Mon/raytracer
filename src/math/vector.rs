@@ -44,6 +44,8 @@ impl Vec3 {
     }
 }
 
+pub type Point3 = Vec3;
+
 // Operator Overloads
 impl Add for Vec3 {
     type Output = Self;
@@ -101,6 +103,7 @@ impl Mul<f64> for Vec3 {
         Vec3::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
+
 impl Mul<Vec3> for f64 {
     type Output = Vec3;
 
