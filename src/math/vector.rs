@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec3 {
     pub x: f64,
@@ -22,59 +22,95 @@ impl Vec3 {
 impl Add for Vec3 {
     type Output = Self;
 
-    fn add(self, _rhs: Self) -> Self {
+    fn add(self, rhs: Self) -> Self {
         Vec3 {
-            x: self.x + _rhs.x,
-            y: self.y + _rhs.y,
-            z: self.z + _rhs.z,
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
         }
+    }
+}
+
+impl AddAssign for Vec3 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
     }
 }
 
 impl Sub for Vec3 {
     type Output = Self;
 
-    fn sub(self, _rhs: Self) -> Self {
+    fn sub(self, rhs: Self) -> Self {
         Vec3 {
-            x: self.x - _rhs.x,
-            y: self.y - _rhs.y,
-            z: self.z - _rhs.z,
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
         }
     }
 }
 
+impl SubAssign for Vec3 {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;
+    }
+}
+
+impl Mul for Vec3 {
+    type Output = f64;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.dot(rhs)
+    }
+}
+
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_add() {
-        let vec1 = Vec3::new(3f64, 4f64, 5f64);
-        let vec2 = Vec3::new(7f64, 6f64, 5f64);
-
-        let expected = Vec3::new(10f64, 10f64, 10f64);
-        let result = vec1 + vec2;
-
-        assert_eq!(expected, result)
+    use rstest::rstest;
+    
+    #[rstest]
+    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(10.0, 10.0, 10.0))]
+    #[case(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 2.0, 3.0))]
+    fn test_add(#[case] a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
+        assert_eq!(a + b, expected);
     }
-    #[test]
-    fn test_sub() {
-        let vec1 = Vec3::new(3f64, 4f64, 5f64);
-        let vec2 = Vec3::new(7f64, 6f64, 5f64);
 
-        let expected = Vec3::new(-4f64, -2f64, 0f64);
-        let result = vec1 - vec2;
-
-        assert_eq!(expected, result)
+    #[rstest]
+    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(10.0, 10.0, 10.0))]
+    #[case(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 2.0, 3.0))]
+    fn test_add_assign(#[case] mut a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
+        a += b;
+        assert_eq!(a, expected);
     }
-    #[test]
-    fn test_dot() {
-        let vec1 = Vec3::new(3f64, 4f64, 5f64);
-        let vec2 = Vec3::new(7f64, 6f64, 5f64);
 
-        let expected = 70f64;
-        let result = vec1.dot(vec2);
 
-        assert_eq!(expected, result)
+    #[rstest]
+    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(-4.0, -2.0, 0.0))]
+    #[case(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 2.0, 3.0), Vec3::new(-1.0, -2.0, -3.0))]
+    fn test_sub(#[case] a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
+        assert_eq!(a - b, expected);
+    }
+
+    #[rstest]
+    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(-4.0, -2.0, 0.0))]
+    #[case(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 2.0, 3.0), Vec3::new(-1.0, -2.0, -3.0))]
+    fn test_sub_assign(#[case] mut a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
+        a -= b;
+        assert_eq!(a, expected);
+    }
+
+    #[rstest]
+    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), 70.0)]
+    #[case(Vec3::new(1.0, 2.0, 3.0), Vec3::new(4.0, 5.0, 6.0), 32.0)]
+    fn test_dot(#[case] a: Vec3, #[case] b: Vec3, #[case] expected: f64) {
+        assert_eq!(a.dot(b), expected);
+        assert_eq!(a*b, expected);
     }
 }
+
