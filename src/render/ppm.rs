@@ -1,16 +1,19 @@
+use std::{fs::File, io::{self, BufWriter, Write}};
+use super::colour::{Colour};
+
 
 pub struct Ppm {
     pub image_type: String,
     pub height: usize,
     pub width: usize,
     pub max_val: usize,
-    pub image: Vec<Vec<Pixel>>,
+    pub image: Vec<Vec<Colour>>,
 }
 
 impl Ppm {
     pub fn new(image_type: &str, height: usize, width: usize) -> Self {
         let image = vec![
-            vec![Pixel { r: 0, g: 0, b: 0 }; width];
+            vec![Colour::new(0.0, 0.0, 0.0); width];
             height
         ];
         Self {
@@ -22,9 +25,10 @@ impl Ppm {
         }
     }
     
-    pub fn set_pixel(&mut self, x: usize, y: usize, pixel: Pixel) {
+    pub fn set_pixel(&mut self, x: usize, y: usize, pixel: Colour) {
         self.image[y][x] = pixel;
     }
+
     pub fn format(&self) -> String {
         use std::io::{self, Write};
         let mut format_img = format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.height, self.width, self.max_val);
@@ -39,17 +43,20 @@ impl Ppm {
         eprint!("\r\x1b[2KDone\n");
         return format_img
     }
-}
 
-#[derive(Clone)]
-pub struct Pixel {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-}
+    pub fn get_headers(&self) -> String {
+        format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.height, self.width, self.max_val)
+    }
 
-impl Pixel {
-    pub fn format(&self) -> String{
-        format!("{0} {1} {2}\n", self.r, self.g, self.b)
+    pub fn write_image(&self, file: File) -> io::Result<()> {
+        let mut writer = BufWriter::new(file);
+        writer.write_all(&(self.get_headers()).into_bytes())?;
+        for x in 0..self.height {
+            for y in 0..self.width {
+                writer.write_all(&(self.image[y][x].format()).into_bytes())?;
+            }
+        }
+        writer.flush()?;
+        Ok(())
     }
 }
