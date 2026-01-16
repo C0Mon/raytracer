@@ -26,7 +26,6 @@ impl Ppm {
     }
     
     pub fn set_pixel(&mut self, row: usize, col: usize, pixel: Colour) {
-        println!("{0}, {1} : {2}, {3}", row, col, self.image.len(), self.image[0].len());
         self.image[row][col] = pixel;
     }
 
