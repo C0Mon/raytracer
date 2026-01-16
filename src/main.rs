@@ -46,7 +46,7 @@ fn main() -> std::io::Result<()> {
     println!("{}", image_height);
     println!("{}", image_width);
     let file = File::create("raycast.ppm")?;
-    let mut image = Ppm::new("P3", image_height as usize, image_width);
+    let mut image = Ppm::new("P3", image_width, image_height as usize);
 
     for row in 0..image.height {
         for col in 0..image.width {

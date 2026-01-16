@@ -26,13 +26,13 @@ impl Ppm {
     }
     
     pub fn set_pixel(&mut self, row: usize, col: usize, pixel: Colour) {
-        println!("{0}, {1}", row, col );
+        println!("{0}, {1} : {2}, {3}", row, col, self.image.len(), self.image[0].len());
         self.image[row][col] = pixel;
     }
 
     pub fn format(&self) -> String {
         use std::io::{self, Write};
-        let mut format_img = format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.height, self.width, self.max_val);
+        let mut format_img = self.get_headers();
         for y in 0..self.height {
             eprint!("\rScanlines remaining: {} ", self.height - y);
             io::stderr().flush().unwrap();
@@ -46,7 +46,7 @@ impl Ppm {
     }
 
     pub fn get_headers(&self) -> String {
-        format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.height, self.width, self.max_val)
+        format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.width, self.height, self.max_val)
     }
 
     pub fn write_image(&self, file: File) -> io::Result<()> {
