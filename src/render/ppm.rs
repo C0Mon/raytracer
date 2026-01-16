@@ -4,14 +4,14 @@ use super::colour::{Colour};
 
 pub struct Ppm {
     pub image_type: String,
-    pub height: usize,
     pub width: usize,
+    pub height: usize,
     pub max_val: usize,
     pub image: Vec<Vec<Colour>>,
 }
 
 impl Ppm {
-    pub fn new(image_type: &str, height: usize, width: usize) -> Self {
+    pub fn new(image_type: &str, width: usize, height: usize) -> Self {
         let image = vec![
             vec![Colour::new(0.0, 0.0, 0.0); width];
             height
@@ -25,8 +25,9 @@ impl Ppm {
         }
     }
     
-    pub fn set_pixel(&mut self, x: usize, y: usize, pixel: Colour) {
-        self.image[y][x] = pixel;
+    pub fn set_pixel(&mut self, row: usize, col: usize, pixel: Colour) {
+        println!("{0}, {1}", row, col );
+        self.image[row][col] = pixel;
     }
 
     pub fn format(&self) -> String {

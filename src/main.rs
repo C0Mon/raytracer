@@ -15,7 +15,7 @@ fn ray_colour(r: &Ray) -> Colour{
 fn main() -> std::io::Result<()> {
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width: isize = 400;
+    let image_width: usize = 400;
 
     // Calculate image height, and ensure that it's at least 1
     let mut image_height:isize = (image_width as f64 / aspect_ratio) as isize;
@@ -43,17 +43,18 @@ fn main() -> std::io::Result<()> {
     let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
     // Render
-
+    println!("{}", image_height);
+    println!("{}", image_width);
     let file = File::create("raycast.ppm")?;
-    let mut image = Ppm::new("P3", 256, 256);
+    let mut image = Ppm::new("P3", image_height as usize, image_width);
 
-    for x in 0..image.height {
-        for y in 0..image.width {
-            let pixel_centre = pixel00_loc + (x as f64 * pixel_delta_u) + (y as f64 * pixel_delta_v);
+    for row in 0..image.height {
+        for col in 0..image.width {
+            let pixel_centre = pixel00_loc + (col as f64 * pixel_delta_u) + (row as f64 * pixel_delta_v);
             let ray_direction = pixel_centre - camera_centre;
             let r = Ray::new(&camera_centre, &ray_direction);
         
-            image.set_pixel(x, y, ray_colour(&r));
+            image.set_pixel(row, col, ray_colour(&r));
         }
     }
 
