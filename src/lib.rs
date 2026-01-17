@@ -9,13 +9,13 @@ pub use math::vector::{Vec3, Point3};
 pub use hittable::{Hittable, Sphere};
 pub use render::colour::Colour;
 
-use crate::{hittable::hittable::{HitRecord, HittableList}, render::{ppm::Ppm, ray::Ray}};
+use crate::{hittable::hittable::{HitRecord, HittableList}, math::interval::Interval, render::{ppm::Ppm, ray::Ray}};
 
 fn ray_colour(r: &Ray, world: &HittableList) -> Colour{
     let mut rec = HitRecord::default();
 
     // Object
-    if world.hit(r, 0.0, f64::INFINITY, &mut rec) {
+    if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {
         return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0));
     }
     

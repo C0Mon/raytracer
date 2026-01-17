@@ -1,8 +1,8 @@
 use std::f64;
 
-struct Interval {
-    min: f64,
-    max: f64,
+pub struct Interval {
+    pub min: f64,
+    pub max: f64,
 }
 
 impl Interval {
