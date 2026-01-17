@@ -42,6 +42,8 @@ impl Vec3 {
     pub fn to_string(&self) -> String {
         format!("{0} ,   {1} ,   {2}", self.x, self.y, self.z)
     }
+
+    
 }
 
 pub type Point3 = Vec3;
@@ -56,6 +58,12 @@ impl Add for Vec3 {
             y: self.y + rhs.y,
             z: self.z + rhs.z,
         }
+    }
+}
+
+impl Default for Vec3 {
+    fn default() -> Self {
+        Vec3::new(0.0, 0.0, 0.0)
     }
 }
 

@@ -1,46 +1,33 @@
-// Declare top-level modules
+
 pub mod math;
-// pub mod ray;
 pub mod hittable;
 pub mod render;
 
 use std::fs::File;
 
-// Re-export commonly used types
-// pub use ray::Ray;
 pub use math::vector::{Vec3, Point3};
 pub use hittable::{Hittable, Sphere};
 pub use render::colour::Colour;
 
-use crate::render::{ppm::Ppm, ray::Ray};
+use crate::{hittable::hittable::{HitRecord, HittableList}, render::{ppm::Ppm, ray::Ray}};
 
-fn hit_sphere(centre: Point3, radius: f64, r: &Ray) -> f64 {
-    let oc: Vec3 = centre - r.origin();
-    let a = r.direction().dot(r.direction());
-    let h = r.direction().dot(oc);
-    let c = oc.dot(oc) - (radius * radius);
+fn ray_colour(r: &Ray, world: &HittableList) -> Colour{
+    let mut rec = HitRecord::default();
 
-    let discriminant =  h * h - a * c;
-    
-    if discriminant < 0.0 {
-        return -1.0;
-    }
-    (h - discriminant.sqrt()) / a
-}
-
-fn ray_colour(r: &Ray) -> Colour{
-    let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r);
-    if t > 0.0 {
-        let N: Vec3 = (r.at(t) - Vec3::new(0.0, 0.0, -1.0)).unit_vector();
-        return 0.5 * Colour::new(N.x + 1.0, N.y + 1.0, N.z + 1.0);
+    // Object
+    if world.hit(r, 0.0, f64::INFINITY, &mut rec) {
+        return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0));
     }
     
+    // Background
     let unit_direction = r.direction().unit_vector();
     let a = 0.5 * (unit_direction.y + 1.0);
     (1.0 - a) * Colour::new(1.0, 1.0, 1.0) + a * Colour::new(0.5, 0.7, 1.0)
 }
 
 pub fn run () -> std::io::Result<()> {
+
+    // Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;
 
@@ -50,7 +37,20 @@ pub fn run () -> std::io::Result<()> {
         image_height = 1;
     }
 
-    // camera
+    // World
+    let mut world = HittableList::default();
+    world.add(Box::new(Sphere::new(
+            Point3::new(0.0, 0.0, -1.0),
+            0.5
+        ))
+    );
+    world.add(Box::new(Sphere::new(
+            Point3::new(0.0, -100.5, -1.0),
+            100.0
+        ))
+    );
+
+    // Camera
 
     let focal_length = 1.0;
     let viewport_height = 2.0;
@@ -70,8 +70,6 @@ pub fn run () -> std::io::Result<()> {
     let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
     // Render
-    println!("{}", image_height);
-    println!("{}", image_width);
     let file = File::create("raycast.ppm")?;
     let mut image = Ppm::new("P3", image_width, image_height as usize);
 
@@ -81,7 +79,7 @@ pub fn run () -> std::io::Result<()> {
             let ray_direction = pixel_centre - camera_centre;
             let r = Ray::new(&camera_centre, &ray_direction);
         
-            image.set_pixel(row, col, ray_colour(&r));
+            image.set_pixel(row, col, ray_colour(&r, &world));
         }
     }
 
