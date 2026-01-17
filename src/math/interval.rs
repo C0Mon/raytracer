@@ -18,6 +18,17 @@ impl Interval {
     pub fn surround(&self, x: f64) -> bool {
         self.min < x && x < self.max
     }
+
+    pub fn clamp(&self, x: f64) -> f64 {
+        if x < self.min {
+            return self.min;
+        }
+        if x > self.max {
+            return self.max;
+        }
+        x
+    }
+
     pub fn empty() -> Interval {
         Interval::new(f64::INFINITY, -f64::INFINITY)
     }
