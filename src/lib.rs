@@ -28,7 +28,7 @@ pub fn run () -> std::io::Result<()> {
     // Camera
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;
-    let mut cam = Camera::new(aspect_ratio, image_width);
+    let mut cam = Camera::new(aspect_ratio, image_width, 100);
 
     cam.render(&world)?;
     Ok(())

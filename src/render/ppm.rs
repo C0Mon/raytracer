@@ -29,21 +29,6 @@ impl Ppm {
         self.image[row][col] = pixel;
     }
 
-    pub fn format(&self) -> String {
-        use std::io::{self, Write};
-        let mut format_img = self.get_headers();
-        for y in 0..self.height {
-            eprint!("\rScanlines remaining: {} ", self.height - y);
-            io::stderr().flush().unwrap();
-            for x in 0..self.width {
-                let pixel_str = self.image[y][x].format();
-                format_img.push_str(&pixel_str);
-            }
-        }
-        eprint!("\r\x1b[2KDone\n");
-        return format_img
-    }
-
     pub fn get_headers(&self) -> String {
         format!("{0}\n{1} {2}\n{3}\n", self.image_type, self.width, self.height, self.max_val)
     }
@@ -55,9 +40,8 @@ impl Ppm {
             eprint!("\rScanlines remaining: {} ", self.height - x);
             io::stderr().flush().unwrap();
             for y in 0..self.width {
-                let mut pixel = self.image[x][y];
-                pixel *= 255.99;
-                writer.write_all(&(pixel.format()).into_bytes())?;
+                let pixel: Colour = self.image[x][y];
+                pixel.write_colour(&mut writer)?;
             }
         }
         writer.flush()?;

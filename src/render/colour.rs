@@ -1,16 +1,18 @@
-use std::{fs::File, io::{BufWriter, Write, Result}};
+use std::{ io::{Write, Result}};
 
-use crate::math::vector::Vec3;
+use crate::math::{interval::Interval, vector::Vec3};
 
 pub type Colour = Vec3;
 
 impl Colour {
-    pub fn write_colour(mut writer: BufWriter<File>, pixel_colour: &Colour) -> Result<()>{
-        writer.write_all(&(pixel_colour.format()).into_bytes())?;
-        Ok(())
-    }
+    pub fn write_colour<W: Write>(&self, writer: &mut W) -> Result<()> {
+        let intensity = Interval::new(0.0, 0.999);
 
-    pub fn format(&self) -> String{
-        format!("{0} {1} {2}\n", self.x as u32, self.y as u32, self.z as u32)
+        let r = (256.0 * intensity.clamp(self.x)) as u8;
+        let g = (256.0 * intensity.clamp(self.y)) as u8;
+        let b = (256.0 * intensity.clamp(self.z)) as u8;
+
+        writer.write_all(format!("{} {} {}\n", r, g, b).as_bytes())?;
+        Ok(())
     }
 }
