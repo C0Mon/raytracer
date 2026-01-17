@@ -3,90 +3,34 @@ pub mod math;
 pub mod hittable;
 pub mod render;
 
-use std::fs::File;
 
 pub use math::vector::{Vec3, Point3};
 pub use hittable::{Hittable, Sphere};
 pub use render::colour::Colour;
 
-use crate::{hittable::hittable::{HitRecord, HittableList}, math::interval::Interval, render::{ppm::Ppm, ray::Ray}};
-
-fn ray_colour(r: &Ray, world: &HittableList) -> Colour{
-    let mut rec = HitRecord::default();
-
-    // Object
-    if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {
-        return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0));
-    }
-    
-    // Background
-    let unit_direction = r.direction().unit_vector();
-    let a = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - a) * Colour::new(1.0, 1.0, 1.0) + a * Colour::new(0.5, 0.7, 1.0)
-}
+use crate::{hittable::hittable::HittableList, render::camera::Camera};
 
 pub fn run () -> std::io::Result<()> {
-
-    // Image
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width: usize = 400;
-
-    // Calculate image height, and ensure that it's at least 1
-    let mut image_height:isize = (image_width as f64 / aspect_ratio) as isize;
-    if image_height < 1  {
-        image_height = 1;
-    }
 
     // World
     let mut world = HittableList::default();
     world.add(Box::new(Sphere::new(
-            Point3::new(0.0, 0.0, -1.0),
-            0.5
-        ))
+        Point3::new(0.0, 0.0, -1.0),
+        0.5
+    ))
     );
     world.add(Box::new(Sphere::new(
-            Point3::new(0.0, -100.5, -1.0),
-            100.0
-        ))
+        Point3::new(0.0, -100.5, -1.0),
+        100.0
+    ))
     );
 
     // Camera
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width: usize = 400;
+    let mut cam = Camera::new(aspect_ratio, image_width);
 
-    let focal_length = 1.0;
-    let viewport_height = 2.0;
-    let viewport_width = viewport_height * (image_width as f64/image_height as f64);
-    let camera_centre = Point3::new(0.0, 0.0, 0.0);
-
-    // Calculate the vectors across the horizontal and down the vertical edges
-    let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-    let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
-
-    // Calculate the horizontal and vertical delta vectors from pixel to pixel
-    let pixel_delta_u = viewport_u / image_width as f64;
-    let pixel_delta_v = viewport_v / image_height as f64;
-
-    // Calculate the location of the upper left pixel
-    let viewport_upper_left = camera_centre - Vec3::new(0.0, 0.0, focal_length) - viewport_u/2.0 - viewport_v/2.0;
-    let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
-
-    // Render
-    let file = File::create("raycast.ppm")?;
-    let mut image = Ppm::new("P3", image_width, image_height as usize);
-
-    for row in 0..image.height {
-        for col in 0..image.width {
-            let pixel_centre = pixel00_loc + (col as f64 * pixel_delta_u) + (row as f64 * pixel_delta_v);
-            let ray_direction = pixel_centre - camera_centre;
-            let r = Ray::new(&camera_centre, &ray_direction);
-        
-            image.set_pixel(row, col, ray_colour(&r, &world));
-        }
-    }
-
-
-    // write_gradient(&mut image);
-    image.write_image(file)?;
-    
+    cam.render(&world)?;
     Ok(())
 }
 
