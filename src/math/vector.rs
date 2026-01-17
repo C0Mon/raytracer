@@ -1,12 +1,27 @@
+#[doc(inline)]
 use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign}};
 #[derive(Debug, Clone, Copy, PartialEq)]
+/// # 3D Vector
+/// A digital representation of a 3D vector, with methods useful for raytracing
 pub struct Vec3 {
+    /// Stores the x coordinate of the vector
     pub x: f64,
+    /// Stores the y coordinate of the vector
     pub y: f64,
+    /// Stores the z coordinate of the vector
     pub z: f64,
 }
 
+
 impl Vec3 {
+    /// Constructor used to create Vec3
+    /// # Example
+    /// ```
+    /// use raytracer::math::vector::Vec3;
+    /// 
+    /// // This creates a vector called direction with x: 3.0, y: 4.0, and z: 5.0
+    /// let direction = Vec3::new(3.0, 4.0, 5.0);
+    /// ```
     pub fn new(x: f64, y:f64, z: f64) -> Self{
         Self {
             x,
@@ -14,7 +29,17 @@ impl Vec3 {
             z
         }
     } 
-
+    /// Calculates the dot product of itself and another vector
+    /// # Example
+    /// ```
+    /// use raytracer::math::vector::Vec3;
+    /// 
+    /// let vec1 = Vec3::new(3.0, 4.0, 5.0);
+    /// let vec2 = Vec3::new(7.0, 6.0, 5.0);
+    /// 
+    /// // Store dot product of vec1 and vec2
+    /// let dot_product = vec1.dot(vec2);
+    /// ```
     pub fn dot(&self, other: Vec3) -> f64 {
         (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
     }
