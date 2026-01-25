@@ -117,7 +117,7 @@ impl Camera {
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
-    fn ray_colour(r: &Ray, world: &HittableList, depth: u32) -> Colour {
+    fn ray_colour(r: &Ray, world: &HittableList, mut depth: u32) -> Colour {
         // If ray has exceeded bounce limit, no more light is gathered
 
         if depth <= 0 {
@@ -127,8 +127,9 @@ impl Camera {
         let mut rec = HitRecord::default();
 
         // Object
-        if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {
-            let direction = Vec3::random_on_hemisphere(&rec.normal);
+        if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
+            let direction = rec.normal + Vec3::random_unit_vector();
+            depth -= 1;
             return 0.5 * Self::ray_colour(&Ray::new(&rec.point, &direction), world, depth);
         }
         
@@ -137,23 +138,6 @@ impl Camera {
         let a = 0.5 * (unit_direction.y + 1.0);
         (1.0 - a) * Colour::new(1.0, 1.0, 1.0) + a * Colour::new(0.5, 0.7, 1.0)
     }
-
-    /*
-        fn get_ray(&self, i: usize, j: usize) -> Ray {
-            // Construct a camera ray originating from the origin and directed at randomly sampled
-            // point around the pixel location i, j
-
-            let offset = Self::sample_square();
-            let pixel_sample = self.pixel00_loc
-                + ((i as f64 + offset.x) * self.pixel_delta_u)
-                + ((j as f64 + offset.y) * self.pixel_delta_v);
-            
-            let ray_origin = self.centre;
-            let ray_direction = pixel_sample - ray_origin;
-
-            Ray::new(&ray_origin, &ray_direction)
-        }
-     */
 
     fn sample_square() -> Vec3 {
         // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square
