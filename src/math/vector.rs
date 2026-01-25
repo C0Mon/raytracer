@@ -1,5 +1,7 @@
 #[doc(inline)]
 use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign}};
+
+use crate::math::util::{random_float, random_normalised};
 #[derive(Debug, Clone, Copy, PartialEq)]
 /// # 3D Vector
 /// A digital representation of a 3D vector, with methods useful for raytracing
@@ -54,6 +56,39 @@ impl Vec3 {
 
     pub fn unit_vector(&self) -> Vec3 {
         return *self/self.length();
+    }
+
+    pub fn random_unit_vector() -> Self {
+        loop {
+            let p = Vec3::random_range(-1.0,1.0);
+            let lensq = p.length_squared();
+            if 1e-160 < lensq && lensq <= 1.0 {
+                return p / lensq.sqrt()
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Self {
+        let on_unit_sphere = Self::random_unit_vector();
+        if on_unit_sphere.dot(*normal) > 0.0 {
+            return on_unit_sphere;
+        };
+        -on_unit_sphere
+    }
+
+    pub fn random() -> Self {
+        Self { 
+            x: random_normalised(),
+            y: random_normalised(), 
+            z: random_normalised(),
+        }
+    }
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self { 
+            x: random_float(min, max),
+            y: random_float(min, max), 
+            z: random_float(min, max),
+        }
     }
     
     pub fn cross(&self, other: Vec3) -> Vec3 {

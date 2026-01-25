@@ -3,7 +3,6 @@ pub mod math;
 pub mod hittable;
 pub mod render;
 
-
 pub use math::vector::{Vec3, Point3};
 pub use hittable::{Hittable, Sphere};
 pub use render::colour::Colour;
@@ -28,7 +27,7 @@ pub fn run () -> std::io::Result<()> {
     // Camera
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;
-    let mut cam = Camera::new(aspect_ratio, image_width, 100);
+    let mut cam = Camera::new(aspect_ratio, image_width, 100, 10);
 
     cam.render(&world)?;
     Ok(())
