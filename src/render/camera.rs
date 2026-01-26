@@ -96,6 +96,7 @@ impl Camera {
         if self.image_height < 1  {
             self.image_height = 1;
         }
+        
         // Camera
 
         let focal_length = 1.0;
@@ -117,7 +118,7 @@ impl Camera {
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
-    fn ray_colour(r: &Ray, world: &HittableList, mut depth: u32) -> Colour {
+    fn ray_colour(r: &Ray, world: &HittableList, depth: u32) -> Colour {
         // If ray has exceeded bounce limit, no more light is gathered
 
         if depth <= 0 {
@@ -128,9 +129,14 @@ impl Camera {
 
         // Object
         if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
-            let direction = rec.normal + Vec3::random_unit_vector();
-            depth -= 1;
-            return 0.5 * Self::ray_colour(&Ray::new(&rec.point, &direction), world, depth);
+            let mut scattered = Ray::default();
+            let mut attenuation = Colour::default();
+        
+            if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
+                return attenuation * Self::ray_colour(&scattered, world, depth-1);
+            }
+            return Colour::new(0.0, 0.0, 0.0);
+            
         }
         
         // Background

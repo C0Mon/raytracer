@@ -90,6 +90,16 @@ impl Vec3 {
             z: random_float(min, max),
         }
     }
+
+    pub fn near_zero(&self) -> bool {
+        // Return true if close to zero in all dimensions
+        let s = 1e-8;
+        f64::abs(self.x) < s && f64::abs(self.y) < s && f64::abs(self.z) < s
+    }
+
+    pub fn reflect(&self, normal: &Vec3) -> Vec3 {
+        *self - (2.0 * self.dot(*normal) * *normal)
+    }
     
     pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3::new(
@@ -157,10 +167,14 @@ impl SubAssign for Vec3 {
 
 
 impl Mul<Vec3> for Vec3 {
-    type Output = f64;
+    type Output = Vec3;
 
-    fn mul(self, rhs: Vec3) -> f64 {
-        self.dot(rhs)
+    fn mul(self, rhs: Vec3) -> Vec3 {
+        Vec3::new(
+            self.x * rhs.x,
+            self.y * rhs.y,
+            self.z * rhs.z,
+        )
     }
 }
 
@@ -298,7 +312,6 @@ mod tests {
     #[case(Vec3::new(1.0, 2.0, 3.0), Vec3::new(4.0, 5.0, 6.0), 32.0)]
     fn test_dot(#[case] a: Vec3, #[case] b: Vec3, #[case] expected: f64) {
         assert_eq!(a.dot(b), expected);
-        assert_eq!(a*b, expected);
     }
 
     #[rstest]

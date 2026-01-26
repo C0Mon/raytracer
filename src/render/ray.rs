@@ -13,6 +13,13 @@ impl Ray {
         }
     }
 
+    pub fn default() -> Self {
+        Self {
+            origin: Point3{ x: 0.0, y: 0.0, z: 0.0},
+            direction: Vec3::default(),
+        }
+    }
+
     pub fn origin(&self) -> Point3 {
         self.origin
     } 

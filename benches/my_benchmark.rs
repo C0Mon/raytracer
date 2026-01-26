@@ -5,9 +5,18 @@ fn render_bench() -> std::io::Result<()>  {
     Ok(())
 }
 
-fn criterion_benchmark(c: &mut Criterion) {
+fn my_benchmark(c: &mut Criterion) {
     c.bench_function("RenderBench", |b| b.iter(||render_bench()));
 }
 
-criterion_group!(benches, criterion_benchmark);
+fn custom_criterion() -> Criterion {
+    Criterion::default()
+        .sample_size(10)
+}
+
+criterion_group!{
+    name = benches;
+    config = custom_criterion();
+    targets = my_benchmark
+}
 criterion_main!(benches);

@@ -1,18 +1,28 @@
+use std::sync::{Arc, LazyLock};
+use std::fmt::Debug;
+
+use crate::hittable::Material;
+use crate::hittable::material::Lambertian;
 use crate::render::ray::Ray;
 use crate::math::interval::{Interval};
-use crate::{Vec3, Point3};
+use crate::{Colour, Point3, Vec3};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+
+static DEFAULT_MATERIAL: LazyLock<Arc<dyn Material + Send + Sync>> =
+    LazyLock::new(|| Arc::new(Lambertian::new(&Colour::new(0.0, 0.0, 0.0))));
+
+#[derive(Debug, Clone)]
 pub struct HitRecord {
     pub point: Point3,
     pub normal: Vec3,
+    pub mat: Arc<dyn Material + Send + Sync>,
     pub t: f64,
     pub front_face: bool,
 }
 
 impl HitRecord {
-    pub fn new(point: Point3, normal: Vec3, t: f64, front_face: bool) -> Self {
-        Self { point, normal, t, front_face }
+    pub fn new(point: Point3, normal: Vec3, t: f64, front_face: bool, mat: Arc<dyn Material + Send + Sync>) -> Self {
+        Self { point, normal, mat, t, front_face }
     }
 
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
@@ -24,11 +34,12 @@ impl HitRecord {
         self.normal = -outward_normal;
     }
 
-    pub fn update(&mut self, rec: HitRecord) {
+    pub fn update(&mut self, rec: &HitRecord) {
         self.point = rec.point;
         self.normal = rec.normal;
         self.t = rec.t;
         self.front_face = rec.front_face;
+        self.mat = rec.mat.clone();
     }
 }
 
@@ -38,7 +49,8 @@ impl Default for HitRecord {
             Point3::default(),
             Vec3::default(),
             0.0,
-            true
+            true,
+            DEFAULT_MATERIAL.clone()
         )
     }
 }
@@ -67,7 +79,7 @@ impl HittableList {
             if object.hit(r, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                rec.update(temp_rec);
+                rec.update(&temp_rec);
             }
         }
 

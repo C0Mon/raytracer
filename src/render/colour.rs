@@ -22,6 +22,9 @@ impl Colour {
         writer.write_all(format!("{} {} {}\n", r as u8, g as u8, b as u8).as_bytes())?;
         Ok(())
     }
+    pub fn default() -> Self {
+        Self { x: 0.0, y: 0.0, z: 0.0 }
+    }
 }
 
 fn linear_to_gamma(linear_component: f64) -> f64 {
