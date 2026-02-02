@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::{Colour, Vec3, hittable::hittable::HitRecord, render::ray::Ray};
+use crate::{Colour, Vec3, hittable::hittable::HitRecord, math::interval::Interval, render::ray::Ray};
 
 
 pub trait Material: Debug + Send + Sync {
@@ -32,20 +32,23 @@ impl Material for Lambertian {
 
 #[derive(Debug, Clone)]
 pub struct Metal {
+    fuzz: f64,
     albedo: Colour
 } 
 
 impl Material for Metal {
     fn scatter (&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Colour, scattered: &mut Ray) -> bool {
-        let reflected = r_in.direction().unit_vector().reflect(&rec.normal);
+        let mut reflected = r_in.direction().unit_vector().reflect(&rec.normal);
+        reflected = reflected.unit_vector() + (self.fuzz * Vec3::random_unit_vector());
         *scattered = Ray::new(&rec.point, &reflected);
         *attenuation = self.albedo;
-        return true
+        return scattered.direction().dot(rec.normal) > 0.0;
     }
 }
 
 impl Metal {
-    pub fn new(albedo: &Colour) -> Self {
-        Self {albedo: *albedo}
+    pub fn new(albedo: &Colour, fuzz: f64) -> Self {
+        let fuzz_range = Interval::new(0.0, 1.0);
+        Self {albedo: *albedo, fuzz: fuzz_range.clamp(fuzz)}
     }
 }

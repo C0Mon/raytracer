@@ -18,9 +18,9 @@ pub fn run () -> std::io::Result<()> {
 
     // Materials
     let material_ground = Arc::new(Lambertian::new(&Colour::new(0.8, 0.8, 0.0)));
-    let material_centre = Arc::new(Lambertian::new(&Colour::new(0.1, 0.2, 0.5)));
-    let material_left = Arc::new(Metal::new(&Colour::new(0.8, 0.8, 0.8)));
-    let material_right = Arc::new(Metal::new(&Colour::new(0.8, 0.6, 0.2)));
+    let material_centre = Arc::new(Lambertian::new(&Colour::new(0.5, 0.2, 0.5)));
+    let material_left = Arc::new(Metal::new(&Colour::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Arc::new(Metal::new(&Colour::new(0.8, 0.6, 0.2), 1.0));
     
     // Objects
     world.add(Box::new(Sphere::new(
