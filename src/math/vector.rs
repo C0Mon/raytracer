@@ -100,6 +100,18 @@ impl Vec3 {
     pub fn reflect(&self, normal: &Vec3) -> Vec3 {
         *self - (2.0 * self.dot(*normal) * *normal)
     }
+
+    /// 'self' and 'normal' must be unit vectors
+    pub fn refract(self, normal: Vec3, etai_over_etai: f64) -> Vec3 {
+        let cos_theta = f64::min(-self.dot(normal), 1.0);
+        let r_out_perp = etai_over_etai * (self + (normal * cos_theta));
+        let k = 1.0 - r_out_perp.length_squared();
+        if k < 0.0 {
+            return self.reflect(&normal)
+        }
+        let r_out_parallel = -f64::sqrt(k) * normal;
+        r_out_perp + r_out_parallel
+    }
     
     pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3::new(

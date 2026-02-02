@@ -9,7 +9,7 @@ pub use math::vector::{Vec3, Point3};
 pub use hittable::{Hittable, Sphere};
 pub use render::colour::Colour;
 
-use crate::{hittable::{hittable::HittableList, material::{Lambertian, Metal}}, render::camera::Camera};
+use crate::{hittable::{hittable::HittableList, material::{Dielectric, Lambertian, Metal}}, render::camera::Camera};
 
 pub fn run () -> std::io::Result<()> {
 
@@ -19,7 +19,7 @@ pub fn run () -> std::io::Result<()> {
     // Materials
     let material_ground = Arc::new(Lambertian::new(&Colour::new(0.8, 0.8, 0.0)));
     let material_centre = Arc::new(Lambertian::new(&Colour::new(0.5, 0.2, 0.5)));
-    let material_left = Arc::new(Metal::new(&Colour::new(0.8, 0.8, 0.8), 0.3));
+    let material_left = Arc::new(Dielectric::new(1.00 / 1.33));
     let material_right = Arc::new(Metal::new(&Colour::new(0.8, 0.6, 0.2), 1.0));
     
     // Objects
