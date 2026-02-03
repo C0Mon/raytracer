@@ -17,6 +17,9 @@ pub struct Camera {
     pub lookat: Point3,     // Point camera is looking at
     pub vup: Vec3,          // Camera-relative "up" direction
 
+    pub defocus_angle: f64, // Variation angle of rays through each pixel
+    pub focus_dist: f64,    // Distance from camera lookfrom point to plane of perfect focus
+
     image_height: isize,        // Rendered image height
     pixel_sample_scale: f64,    // Color scale factor for a sum of pixel samples
     centre: Point3,             // Camera center
@@ -28,6 +31,9 @@ pub struct Camera {
     u: Vec3,                    
     v: Vec3,
     w: Vec3,
+
+    defocus_disk_u: Vec3,   // Defocus disk horizontal radius
+    defocus_disk_v: Vec3,   // Defocus disk vertical radius
 }
 
 impl Camera {
@@ -43,6 +49,9 @@ impl Camera {
             lookat: Point3::new(0.0, 0.0, -1.0),
             vup: Vec3::new(0.0, 1.0, 0.0),
 
+            defocus_angle: 0.0,
+            focus_dist: 10.0,
+
             image_height: 0,
             pixel_sample_scale: 0.0,
             centre: Point3::default(),
@@ -53,6 +62,9 @@ impl Camera {
             u: Vec3::default(),
             v: Vec3::default(),
             w: Vec3::default(),
+
+            defocus_disk_u: Vec3::default(),
+            defocus_disk_v: Vec3::default(),
         };
 
         cam.initialise();
@@ -70,6 +82,9 @@ impl Camera {
         let scale = self.pixel_sample_scale;
         let centre = self.centre;
         let max_depth = self.max_depth;
+        let defocus_angle = self.defocus_angle;
+        let defocus_disk_u = self.defocus_disk_u;
+        let defocus_disk_v = self.defocus_disk_v;
 
         let file = File::create("raycast.ppm")?;
         let mut image = Ppm::new("P3", self.image_width, self.image_height as usize);
@@ -88,12 +103,21 @@ impl Camera {
                     let mut pixel_colour = Colour::new(0.0, 0.0, 0.0);
 
                     for _ in 0..samples {
-                        let ray_origin = centre;
+                        // Set origin
+                        let ray_origin: Vec3;
+                        if defocus_angle <= 0.0 {
+                            ray_origin = centre;
+                        }
+                        else {
+                            let p = Vec3::random_in_unit_disk();
+                            ray_origin = centre + (p.x * defocus_disk_u) + (p.y * defocus_disk_v);
+                        }
+                        // Sample 
                         let offset = Camera::sample_square();
                         let pixel_sample = pixel00
                             + ((col as f64 + offset.x) * delta_u)
                             + ((row as f64 + offset.y) * delta_v);
-
+                        // Set colour
                         let r = Ray::new(&ray_origin, &(pixel_sample - ray_origin));
                         pixel_colour += Camera::ray_colour(&r, world, max_depth);
                     }
@@ -124,11 +148,10 @@ impl Camera {
         self.centre = self.lookfrom;
 
         // Determine viewport dimensions
-        let focal_length = (self.lookfrom - self.lookat).length();
         let theta = degrees_to_radians(self.vfov);
         let h = f64::tan(theta/2.0);
 
-        let viewport_height = 2.0 * h * focal_length;
+        let viewport_height = 2.0 * h * self.focus_dist;
         let viewport_width = viewport_height * (self.image_width as f64/self.image_height as f64);
 
         // Calculate the u, v, w unit basis vectors for the camera coordinate frame.
@@ -145,8 +168,12 @@ impl Camera {
         self.pixel_delta_v = viewport_v / self.image_height as f64; // Vector down viewport vertical edge
 
         // Calculate the location of the upper left pixel
-        let viewport_upper_left = self.centre - (focal_length * self.w) - viewport_u/2.0 - viewport_v/2.0;
+        let viewport_upper_left = self.centre - (self.focus_dist * self.w) - viewport_u/2.0 - viewport_v/2.0;
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
+
+        let defocus_radius = self.focus_dist * f64::tan(degrees_to_radians(self.defocus_angle / 2.0));
+        self.defocus_disk_u = self.u * defocus_radius;
+        self.defocus_disk_v = self.v * defocus_radius;
     }
 
     fn ray_colour(r: &Ray, world: &HittableList, depth: u32) -> Colour {
