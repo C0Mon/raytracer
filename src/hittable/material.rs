@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use crate::{Colour, Vec3, hittable::hittable::HitRecord, math::interval::Interval, render::ray::Ray};
+use std::{fmt::Debug};
+use crate::{Colour, Vec3, hittable::hittable::HitRecord, math::{interval::Interval, util::random_normalised}, render::ray::Ray};
 
 
 pub trait Material: Debug + Send + Sync {
@@ -64,6 +64,14 @@ impl Dielectric {
     pub fn new(refraction_index: f64) -> Self {
         Self { refraction_index }
     }
+
+    fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
+        // Uses Schlick's approximation for reflectance
+
+        let mut r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        r0 = r0 * r0;
+        r0 + ((1.0 - r0) * f64::powf(1.0 - cosine, 5.0))
+    }
 }
 
 impl Material for Dielectric {
@@ -84,7 +92,7 @@ impl Material for Dielectric {
         let cannot_refract = ri * sin_theta > 1.0;
         
         let direction: Vec3;
-        if cannot_refract {
+        if cannot_refract || Self::reflectance(cos_theta, ri) > random_normalised() {
             direction = unit_direction.reflect(&rec.normal);
         }
         else {
@@ -95,3 +103,5 @@ impl Material for Dielectric {
         
     }
 }
+
+
