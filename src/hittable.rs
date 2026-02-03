@@ -1,6 +1,6 @@
 pub mod hittable;
-pub mod sphere;
 pub mod material;
+pub mod sphere;
 pub use hittable::Hittable;
-pub use sphere::Sphere;
 pub use material::Material;
+pub use sphere::Sphere;

@@ -1,12 +1,11 @@
-use std::sync::{Arc, LazyLock};
 use std::fmt::Debug;
+use std::sync::{Arc, LazyLock};
 
 use crate::hittable::Material;
 use crate::hittable::material::Lambertian;
+use crate::math::interval::Interval;
 use crate::render::ray::Ray;
-use crate::math::interval::{Interval};
 use crate::{Colour, Point3, Vec3};
-
 
 static DEFAULT_MATERIAL: LazyLock<Arc<dyn Material + Send + Sync>> =
     LazyLock::new(|| Arc::new(Lambertian::new(&Colour::new(0.0, 0.0, 0.0))));
@@ -21,8 +20,20 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-    pub fn new(point: Point3, normal: Vec3, t: f64, front_face: bool, mat: Arc<dyn Material + Send + Sync>) -> Self {
-        Self { point, normal, mat, t, front_face }
+    pub fn new(
+        point: Point3,
+        normal: Vec3,
+        t: f64,
+        front_face: bool,
+        mat: Arc<dyn Material + Send + Sync>,
+    ) -> Self {
+        Self {
+            point,
+            normal,
+            mat,
+            t,
+            front_face,
+        }
     }
 
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
@@ -50,7 +61,7 @@ impl Default for HitRecord {
             Vec3::default(),
             0.0,
             true,
-            DEFAULT_MATERIAL.clone()
+            DEFAULT_MATERIAL.clone(),
         )
     }
 }
@@ -59,8 +70,9 @@ pub trait Hittable: Send + Sync {
     fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
 
+#[derive(Default)]
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>
+    objects: Vec<Box<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -84,11 +96,5 @@ impl HittableList {
         }
 
         hit_anything
-    }
-}
-
-impl Default for HittableList {
-    fn default() -> Self {
-        HittableList { objects: Vec::new() }
     }
 }

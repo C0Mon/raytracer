@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
-use crate::{Hittable, Point3, Vec3, hittable::hittable::HitRecord, math::interval::Interval, render::ray::Ray};
 use crate::hittable::Material;
+use crate::{
+    Hittable, Point3, Vec3, hittable::hittable::HitRecord, math::interval::Interval,
+    render::ray::Ray,
+};
 
 pub struct Sphere {
     pub centre: Point3,
@@ -11,7 +14,11 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(centre: Point3, radius: f64, mat: Arc<dyn Material + Send + Sync>) -> Self {
-        Self { centre, radius, mat }
+        Self {
+            centre,
+            radius,
+            mat,
+        }
     }
 }
 
@@ -22,8 +29,8 @@ impl Hittable for Sphere {
         let h = r.direction().dot(oc);
         let c = oc.dot(oc) - (self.radius * self.radius);
 
-        let discriminant =  h * h - a * c;
-        
+        let discriminant = h * h - a * c;
+
         if discriminant < 0.0 {
             return false;
         }
@@ -34,7 +41,7 @@ impl Hittable for Sphere {
         if !ray_t.surround(root) {
             root = (h + sqrtd) / a;
             if !ray_t.surround(root) {
-                return false
+                return false;
             }
         }
         rec.t = root;

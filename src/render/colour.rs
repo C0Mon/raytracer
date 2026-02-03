@@ -1,4 +1,4 @@
-use std::{ io::{Result, Write}};
+use std::io::{Result, Write};
 
 use crate::math::{interval::Interval, vector::Vec3};
 
@@ -14,16 +14,12 @@ impl Colour {
         let mut b = linear_to_gamma(self.z);
 
         // Translate the [0, 1] component to [0, 255]
-        r = 256.0 * intensity.clamp(r) ;
+        r = 256.0 * intensity.clamp(r);
         g = 256.0 * intensity.clamp(g);
         b = 256.0 * intensity.clamp(b);
 
-
         writer.write_all(format!("{} {} {}\n", r as u8, g as u8, b as u8).as_bytes())?;
         Ok(())
-    }
-    pub fn default() -> Self {
-        Self { x: 0.0, y: 0.0, z: 0.0 }
     }
 }
 

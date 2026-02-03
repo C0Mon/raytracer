@@ -1,4 +1,4 @@
-pub mod ppm;
-pub mod colour;
-pub mod ray;
 pub mod camera;
+pub mod colour;
+pub mod ppm;
+pub mod ray;

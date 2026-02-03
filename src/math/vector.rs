@@ -1,5 +1,6 @@
+use std::fmt::{Display, write};
 #[doc(inline)]
-use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign}};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use crate::math::util::{random_float, random_normalised};
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -14,31 +15,26 @@ pub struct Vec3 {
     pub z: f64,
 }
 
-
 impl Vec3 {
     /// Constructor used to create Vec3
     /// # Example
     /// ```
     /// use raytracer::math::vector::Vec3;
-    /// 
+    ///
     /// // This creates a vector called direction with x: 3.0, y: 4.0, and z: 5.0
     /// let direction = Vec3::new(3.0, 4.0, 5.0);
     /// ```
-    pub fn new(x: f64, y:f64, z: f64) -> Self{
-        Self {
-            x,
-            y,
-            z
-        }
-    } 
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
+    }
     /// Calculates the dot product of itself and another vector
     /// # Example
     /// ```
     /// use raytracer::math::vector::Vec3;
-    /// 
+    ///
     /// let vec1 = Vec3::new(3.0, 4.0, 5.0);
     /// let vec2 = Vec3::new(7.0, 6.0, 5.0);
-    /// 
+    ///
     /// // Store dot product of vec1 and vec2
     /// let dot_product = vec1.dot(vec2);
     /// ```
@@ -55,7 +51,7 @@ impl Vec3 {
     }
 
     pub fn unit_vector(&self) -> Vec3 {
-        return *self/self.length();
+        *self / self.length()
     }
 
     pub fn random_in_unit_disk() -> Vec3 {
@@ -69,10 +65,10 @@ impl Vec3 {
 
     pub fn random_unit_vector() -> Self {
         loop {
-            let p = Vec3::random_range(-1.0,1.0);
+            let p = Vec3::random_range(-1.0, 1.0);
             let lensq = p.length_squared();
             if 1e-160 < lensq && lensq <= 1.0 {
-                return p / lensq.sqrt()
+                return p / lensq.sqrt();
             }
         }
     }
@@ -86,16 +82,16 @@ impl Vec3 {
     }
 
     pub fn random() -> Self {
-        Self { 
+        Self {
             x: random_normalised(),
-            y: random_normalised(), 
+            y: random_normalised(),
             z: random_normalised(),
         }
     }
     pub fn random_range(min: f64, max: f64) -> Self {
-        Self { 
+        Self {
             x: random_float(min, max),
-            y: random_float(min, max), 
+            y: random_float(min, max),
             z: random_float(min, max),
         }
     }
@@ -116,28 +112,28 @@ impl Vec3 {
         let r_out_perp = etai_over_etai * (self + (normal * cos_theta));
         let k = 1.0 - r_out_perp.length_squared();
         if k < 0.0 {
-            return self.reflect(&normal)
+            return self.reflect(&normal);
         }
         let r_out_parallel = -f64::sqrt(k) * normal;
         r_out_perp + r_out_parallel
     }
-    
+
     pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3::new(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
-            self. x * other.y - self.y * other.x
+            self.x * other.y - self.y * other.x,
         )
     }
-
-    pub fn to_string(&self) -> String {
-        format!("{0} ,   {1} ,   {2}", self.x, self.y, self.z)
-    }
-
-    
 }
 
 pub type Point3 = Vec3;
+
+impl Display for Vec3 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ,   {} ,   {}", self.x, self.y, self.z)
+    }
+}
 
 // Operator Overloads
 impl Add for Vec3 {
@@ -186,16 +182,11 @@ impl SubAssign for Vec3 {
     }
 }
 
-
 impl Mul<Vec3> for Vec3 {
     type Output = Vec3;
 
     fn mul(self, rhs: Vec3) -> Vec3 {
-        Vec3::new(
-            self.x * rhs.x,
-            self.y * rhs.y,
-            self.z * rhs.z,
-        )
+        Vec3::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z)
     }
 }
 
@@ -239,7 +230,6 @@ impl DivAssign<f64> for Vec3 {
     }
 }
 
-
 impl Neg for Vec3 {
     type Output = Vec3;
 
@@ -248,28 +238,41 @@ impl Neg for Vec3 {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use rstest::rstest;
-    
+
     #[rstest]
-    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(10.0, 10.0, 10.0))]
-    #[case(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 2.0, 3.0))]
+    #[case(
+        Vec3::new(3.0, 4.0, 5.0),
+        Vec3::new(7.0, 6.0, 5.0),
+        Vec3::new(10.0, 10.0, 10.0)
+    )]
+    #[case(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(1.0, 2.0, 3.0),
+        Vec3::new(1.0, 2.0, 3.0)
+    )]
     fn test_add(#[case] a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
         assert_eq!(a + b, expected);
     }
 
     #[rstest]
-    #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(10.0, 10.0, 10.0))]
-    #[case(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 2.0, 3.0))]
+    #[case(
+        Vec3::new(3.0, 4.0, 5.0),
+        Vec3::new(7.0, 6.0, 5.0),
+        Vec3::new(10.0, 10.0, 10.0)
+    )]
+    #[case(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(1.0, 2.0, 3.0),
+        Vec3::new(1.0, 2.0, 3.0)
+    )]
     fn test_add_assign(#[case] mut a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
         a += b;
         assert_eq!(a, expected);
     }
-
 
     #[rstest]
     #[case(Vec3::new(3.0, 4.0, 5.0), Vec3::new(7.0, 6.0, 5.0), Vec3::new(-4.0, -2.0, 0.0))]
@@ -289,15 +292,15 @@ mod tests {
     #[rstest]
     #[case(Vec3::new(3.0, 4.0, 5.0), 10.0, Vec3::new(30.0, 40.0, 50.0))]
     #[case(Vec3::new(3.0, 2.0, 400.0), 0.0, Vec3::new(0.0, 0.0, 0.0))]
-    #[case( Vec3::new(5.0, 4.0, 3.0), 4.0, Vec3::new(20.0, 16.0, 12.0))]
+    #[case(Vec3::new(5.0, 4.0, 3.0), 4.0, Vec3::new(20.0, 16.0, 12.0))]
     fn test_scalar_mult(#[case] a: Vec3, #[case] b: f64, #[case] expected: Vec3) {
-        assert_eq!(a*b, expected);
+        assert_eq!(a * b, expected);
     }
 
     #[rstest]
     #[case(Vec3::new(3.0, 4.0, 5.0), 10.0, Vec3::new(30.0, 40.0, 50.0))]
     #[case(Vec3::new(3.0, 2.0, 400.0), 0.0, Vec3::new(0.0, 0.0, 0.0))]
-    #[case( Vec3::new(5.0, 4.0, 3.0), 4.0, Vec3::new(20.0, 16.0, 12.0))]
+    #[case(Vec3::new(5.0, 4.0, 3.0), 4.0, Vec3::new(20.0, 16.0, 12.0))]
     fn test_scalar_mult_assign(#[case] mut a: Vec3, #[case] b: f64, #[case] expected: Vec3) {
         a *= b;
         assert_eq!(a, expected);
@@ -308,7 +311,7 @@ mod tests {
     #[case(Vec3::new(0.0, 0.0, 0.0), 2.0, Vec3::new(0.0, 0.0, 0.0))]
     #[case(Vec3::new(20.0, 16.0, 12.0), 4.0, Vec3::new(5.0, 4.0, 3.0))]
     fn test_scalar_div(#[case] a: Vec3, #[case] b: f64, #[case] expected: Vec3) {
-        assert_eq!(a/b, expected);
+        assert_eq!(a / b, expected);
     }
 
     #[rstest]
@@ -338,14 +341,24 @@ mod tests {
     #[rstest]
     #[case(Vec3::new(5.0, 12.0, 13.0), Vec3::new(3.0, 4.0, 5.0), Vec3::new(8.0, 14.0, -16.0))]
     #[case(Vec3::new(1.0, 2.0, 3.0), Vec3::new(3.0, 4.0, 5.0), Vec3::new(-2.0, 4.0, -2.0))]
-    #[case(Vec3::new(1.0, 2.0, 3.0), Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0))]
+    #[case(
+        Vec3::new(1.0, 2.0, 3.0),
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 0.0)
+    )]
     fn test_cross(#[case] a: Vec3, #[case] b: Vec3, #[case] expected: Vec3) {
         assert_eq!(a.cross(b), expected)
     }
 
     #[rstest]
-    #[case(Vec3::new(5.0, 12.0, 13.0), Vec3::new(0.27196414,0.65271395,0.70710678))]
-    #[case(Vec3::new(1.0, 2.0, 3.0), Vec3::new(0.26726124,0.53452248,0.80178372))]
+    #[case(
+        Vec3::new(5.0, 12.0, 13.0),
+        Vec3::new(0.27196414, 0.65271395, 0.70710678)
+    )]
+    #[case(
+        Vec3::new(1.0, 2.0, 3.0),
+        Vec3::new(0.26726124, 0.53452248, 0.80178372)
+    )]
     #[case(Vec3::new(-20.0, 40.0, 13.0), Vec3::new(-0.42943775,0.85887550,0.27913453))]
     fn test_unit_vector(#[case] a: Vec3, #[case] expected: Vec3) {
         let epsilon = 1e-6;
@@ -354,6 +367,4 @@ mod tests {
         assert!((unit.y - expected.y).abs() < epsilon);
         assert!((unit.z - expected.z).abs() < epsilon);
     }
-
 }
-

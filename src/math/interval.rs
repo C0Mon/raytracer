@@ -47,7 +47,7 @@ impl Default for Interval {
 mod tests {
     use super::*;
     use rstest::rstest;
-    
+
     #[rstest]
     #[case(Interval::new(3.0, 5.0), 2.0)]
     #[case(Interval::new(3.0, 5.0), 2.0)]
@@ -72,5 +72,4 @@ mod tests {
     fn test_surrounds(#[case] a: Interval, #[case] b: f64, #[case] expected: bool) {
         assert_eq!(a.surround(b), expected);
     }
-    
 }
